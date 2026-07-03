@@ -23,26 +23,37 @@ an `lrc` subtitle stream and thrashes in a restart loop (high CPU, repeated
 Recommendation: document/ship a **single** canonical service and make it explicit
 that only one unit may run `device.py`.
 
-## 2. Harden the documented `device.service`
+## 2. 8-hour chunking is done by a crontab reboot (not `RuntimeMaxSec`)
 
-The service block currently in `README.md` is missing a few options that the
-working Pi unit has and benefits from:
+The intended behavior is for YouTube to store each **8-hour segment as its own
+video**. This is achieved the way the picam docs already prescribe under
+[Automatic startup](https://ac-training-lab.readthedocs.io/en/latest/devices/picam.html#automatic-startup):
+a **root crontab** reboots the Pi every 8 hours, and on each boot `device.py`
+calls the Lambda `end` (which finalizes/stops the previous broadcast on YouTube,
+closing that chunk) followed by `create` (a fresh broadcast for the next chunk):
 
-- `Restart=always`, `RestartSec=20` (already documented, keep)
-- `RuntimeMaxSec=8h` — **intentional**: this periodic restart ends the current
-  YouTube broadcast and starts a fresh one, so each 8-hour segment is saved as its
-  own stored YouTube video (chunked recordings). It also recovers the pipeline from
-  long-run drift. Do **not** remove this or make `create` reuse the previous
-  broadcast — that would prevent YouTube from finalizing each 8-hour chunk.
-- `KillSignal=SIGINT` + `TimeoutStopSec=45` — `device.py` catches
-  `KeyboardInterrupt` and cleanly terminates `rpicam-vid` and `ffmpeg`. Without
-  SIGINT, `systemctl stop/restart` sends SIGTERM and can leave orphaned camera
-  processes holding the device.
+```cron
+# Restart at 5 am, 1 pm, and 9 pm local time (8-hour spacing)
+0 5,13,21 * * * /sbin/shutdown -r now
+```
+
+Because of this, do **not**:
+
+- add `RuntimeMaxSec=8h` (or similar) to `device.service` — the cron reboot
+  already provides the periodic restart, and a second mechanism would create
+  off-schedule chunk boundaries; and
+- make the Lambda `create` action idempotent / reuse the previous broadcast — that
+  would prevent YouTube from finalizing each 8-hour chunk. `create` must always
+  start a fresh broadcast, and `device.py` must keep calling `end` before `create`
+  on startup.
+
+Keep the plain `device.service` from the README (`Restart=always`,
+`RestartSec=10`, `TimeoutStartSec=60`). Two small, optional doc fixes remain:
+
+- `StartLimitInterval` / `StartLimitBurst` are shown under `[Service]` in the
+  README but belong in the `[Unit]` section (they are ignored under `[Service]` in
+  current systemd).
 - `Environment=PYTHONUNBUFFERED=1` — so `journalctl` shows logs live.
-
-Also, `StartLimitInterval` / `StartLimitBurst` are shown under `[Service]` in the
-README but belong in the `[Unit]` section (they are ignored under `[Service]` in
-current systemd).
 
 ## 3. Optional: make the ffmpeg input format explicit in `device.py`
 
