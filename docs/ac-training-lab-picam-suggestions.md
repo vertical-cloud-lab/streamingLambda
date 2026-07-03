@@ -29,8 +29,11 @@ The service block currently in `README.md` is missing a few options that the
 working Pi unit has and benefits from:
 
 - `Restart=always`, `RestartSec=20` (already documented, keep)
-- `RuntimeMaxSec=8h` — periodically restart the whole pipeline so it recovers
-  from long-run drift / stale broadcasts.
+- `RuntimeMaxSec=8h` — **intentional**: this periodic restart ends the current
+  YouTube broadcast and starts a fresh one, so each 8-hour segment is saved as its
+  own stored YouTube video (chunked recordings). It also recovers the pipeline from
+  long-run drift. Do **not** remove this or make `create` reuse the previous
+  broadcast — that would prevent YouTube from finalizing each 8-hour chunk.
 - `KillSignal=SIGINT` + `TimeoutStopSec=45` — `device.py` catches
   `KeyboardInterrupt` and cleanly terminates `rpicam-vid` and `ffmpeg`. Without
   SIGINT, `systemctl stop/restart` sends SIGTERM and can leave orphaned camera
