@@ -27,8 +27,8 @@ jobs:
 
       - name: Check secrets are present
         env:
-          CID: ${{ secrets.TAILSCALE_OAUTH_CLIENT_ID }}
-          CSECRET: ${{ secrets.TAILSCALE_OAUTH_SECRET }}
+          CID: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          CSECRET: ${{ secrets.TS_OAUTH_SECRET }}
         run: |
           echo "client id length: ${#CID}"
           echo "secret length: ${#CSECRET}"
@@ -36,6 +36,6 @@ jobs:
       - name: Connect to Tailscale
         uses: tailscale/github-action@v4
         with:
-          oauth-client-id: ${{ secrets.TAILSCALE_OAUTH_CLIENT_ID }}
-          oauth-secret: ${{ secrets.TAILSCALE_OAUTH_SECRET }}
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
           tags: tag:tailscale-ssh
