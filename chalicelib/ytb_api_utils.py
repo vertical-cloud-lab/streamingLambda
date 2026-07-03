@@ -1,3 +1,4 @@
+import os
 import boto3
 import pickle
 import time
@@ -9,8 +10,8 @@ SCOPES = ["https://www.googleapis.com/auth/youtube"]
 CHANNEL_ID = "UCHBzCfYpGwoqygH9YNh9A6g"
 
 YOUTUBE = None
-S3_BUCKET = "ac-token-youtube-api"
-S3_KEY = "token/token.pickle"
+S3_BUCKET = os.environ.get("YOUTUBE_TOKEN_S3_BUCKET", "ac-token-youtube-api")
+S3_KEY = os.environ.get("YOUTUBE_TOKEN_S3_KEY", "token/token.pickle")
 
 def init_youtube_service():
     global YOUTUBE

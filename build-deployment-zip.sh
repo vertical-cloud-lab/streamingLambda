@@ -22,12 +22,12 @@ mkdir -p dependencies
 # where this script runs. Building unpinned on an ARM host (such as the
 # Raspberry Pi) produces ARM binaries that fail to load on Lambda with
 # Runtime.ImportModuleError (502). Keep --python-version in sync with the
-# function's configured runtime (Python 3.11).
+# function's configured runtime (Python 3.12).
 echo "Installing Python dependencies..."
 pip install \
   --platform manylinux2014_x86_64 \
   --implementation cp \
-  --python-version 3.11 \
+  --python-version 3.12 \
   --only-binary=:all: \
   --target ./dependencies \
   boto3 \
