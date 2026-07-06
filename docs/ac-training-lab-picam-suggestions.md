@@ -70,3 +70,75 @@ when the freshly-created broadcast is added to its playlist. The broadcast is
 created and streams fine; only the playlist-add fails. This retry/backoff belongs
 in this repo's `chalicelib/ytb_api_utils.py` (`create_broadcast_and_bind_stream`),
 not in ac-training-lab.
+
+## 5. Disable Wi-Fi power save (root cause of the Pi dropping off the network)
+
+On 2026-07-06 the Pi went unreachable on the tailnet for hours while the stream
+"hung" (it only recovered at the next scheduled cron reboot). The kernel log
+showed `brcmfmac: brcmf_cfg80211_set_power_mgmt: power save enabled` — the
+well-known Pi Zero 2 W failure where Wi-Fi power saving wedges the connection
+until reboot. The hardware watchdog was already active (systemd,
+`hardware timeout of 1min`), so a kernel hang would have self-rebooted; the
+outage was a network-level drop, consistent with power save.
+
+Applied on the Pi (recommend shipping in the picam setup docs):
+
+```ini
+# /etc/NetworkManager/conf.d/wifi-powersave-off.conf
+[connection]
+# 2 = disable Wi-Fi power saving (Pi Zero 2 W drops off Wi-Fi with it enabled)
+wifi.powersave = 2
+```
+
+plus a live `iw dev wlan0 set power_save off` (package `iw`) so it takes effect
+without a reconnect.
+
+## 6. Persistent journald (so outages can be post-mortemed)
+
+The journal was RAM-only, so all logs from before a reboot were lost — the
+2026-07-06 outage could not be fully diagnosed because the 13:00 cron reboot
+wiped them. Applied on the Pi:
+
+```ini
+# /etc/systemd/journald.conf.d/persistent.conf
+[Journal]
+Storage=persistent
+SystemMaxUse=100M
+```
+
+(then `systemd-tmpfiles --create --prefix /var/log/journal` and
+`systemctl restart systemd-journald`). `SystemMaxUse=100M` bounds the journal so
+it cannot fill the SD card.
+
+## 7. Stall watchdog: restart `device.service` when RTMP output stalls
+
+The remaining failure mode systemd cannot catch: `ffmpeg`/`rpicam-vid` stay
+*alive* but no data reaches YouTube (dead RTMP socket, wedged camera pipeline) —
+`Restart=always` never fires because nothing exits. A watchdog now runs on the
+Pi (recommend upstreaming to the picam setup):
+
+- `/usr/local/bin/stream-watchdog.sh` — every minute, reads `bytes_acked` on the
+  established TCP connection to the RTMP server (`ss -tin '( dport = :1935 )'`),
+  the ground truth that data is reaching YouTube. Three consecutive checks with
+  no progress (or no socket) → `systemctl restart device.service`. A 180 s grace
+  period after service start avoids false positives while `end`/`create` run,
+  and the counter resets whenever bytes move (a *lower* count than last check
+  just means a new socket after a reconnect, which is healthy).
+- `stream-watchdog.service` (oneshot) + `stream-watchdog.timer`
+  (`OnBootSec=2min`, `OnUnitActiveSec=1min`), enabled.
+- Optional dead-man's-switch: if `/etc/default/stream-watchdog` defines
+  `HEALTHCHECK_URL` (e.g. a Healthchecks.io or UptimeRobot heartbeat URL), the
+  watchdog pings it on every *healthy* check — so an external monitor alerts
+  when the whole Pi drops off the network, the one case no on-device logic can
+  handle. Currently unset; add a URL to enable alerting.
+
+Validated 2026-07-06 by freezing ffmpeg with `SIGSTOP`: the watchdog logged
+3 missed checks, restarted `device.service`, Lambda `end`→`create` returned 200,
+and the stream came back on a fresh broadcast (~110 s detection + normal restart
+time). A watchdog restart mid-cycle behaves exactly like a boot: it finalizes
+the current chunk and opens a new one, so it composes fine with the 8-hour
+cron-reboot chunking in (2).
+
+Note on periodic speed tests: avoid full-bandwidth tests (e.g. `speedtest`) on
+this Pi — they saturate the Zero 2 W's uplink and compete with the live RTMP
+upload, causing the very stalls being monitored for.
