@@ -130,7 +130,20 @@ Pi (recommend upstreaming to the picam setup):
   `HEALTHCHECK_URL` (e.g. a Healthchecks.io or UptimeRobot heartbeat URL), the
   watchdog pings it on every *healthy* check — so an external monitor alerts
   when the whole Pi drops off the network, the one case no on-device logic can
-  handle. Currently unset; add a URL to enable alerting.
+  handle. A commented template now lives in `/etc/default/stream-watchdog` on
+  the Pi; uncomment `HEALTHCHECK_URL=` and drop the ping URL in (suggested
+  monitor settings: period 5 min, grace 10 min). Both `hc-ping.com` and
+  `heartbeat.uptimerobot.com` are reachable from the Pi (verified 2026-07-06).
+- Restart budget (guard against broadcast churn): each watchdog restart runs
+  `end`→`create`, i.e. spawns a fresh YouTube broadcast. To make a persistent
+  stall (e.g. degraded-but-up network) physically unable to spawn an endless
+  series of short broadcasts, the watchdog keeps a rolling-24 h history of its
+  own restarts in `/var/lib/stream-watchdog/restarts` (persists across the cron
+  reboots) and refuses to restart beyond `MAX_RESTARTS_PER_DAY` (default 6,
+  overridable in `/etc/default/stream-watchdog`). When the budget is exhausted
+  it logs `restart budget exhausted … holding off` and does nothing — and since
+  the stream is stalled, heartbeat pings have stopped, so the external monitor
+  alerts a human instead.
 
 Validated 2026-07-06 by freezing ffmpeg with `SIGSTOP`: the watchdog logged
 3 missed checks, restarted `device.service`, Lambda `end`→`create` returned 200,
@@ -138,6 +151,28 @@ and the stream came back on a fresh broadcast (~110 s detection + normal restart
 time). A watchdog restart mid-cycle behaves exactly like a boot: it finalizes
 the current chunk and opens a new one, so it composes fine with the 8-hour
 cron-reboot chunking in (2).
+
+### Worst-case broadcast-churn bounds (why "hundreds of short streams" cannot happen)
+
+Three independent limits stack, and all restart paths are covered by at least
+one of them:
+
+1. **Watchdog cadence**: a watchdog restart needs 3 consecutive missed 1-min
+   checks plus the 180 s post-start grace, so even a permanently-stalled stream
+   yields at most ~1 watchdog restart per ~7 min *in principle* — but (2) and
+   (3) cut in long before that matters.
+2. **Watchdog budget**: at most `MAX_RESTARTS_PER_DAY` (6) watchdog-initiated
+   restarts per rolling 24 h, persisted across reboots.
+3. **systemd start limit**: `device.service` has `StartLimitIntervalSec=3600` /
+   `StartLimitBurst=3` — *any* combination of crash-loop (`Restart=always`) and
+   watchdog restarts beyond 3 starts per hour puts the unit into `failed`
+   until the next cron reboot; the watchdog sees an inactive unit and does
+   nothing (and heartbeats stop → alert).
+
+Net worst case ≈ 3 scheduled chunk broadcasts + ≤6 watchdog restarts + a few
+crash-loop starts per day — bounded at roughly a dozen broadcasts/day even if
+everything is on fire, vs. the hundreds a naive every-N-minutes restarter
+could produce.
 
 Note on periodic speed tests: avoid full-bandwidth tests (e.g. `speedtest`) on
 this Pi — they saturate the Zero 2 W's uplink and compete with the live RTMP
