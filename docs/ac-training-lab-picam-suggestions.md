@@ -126,14 +126,15 @@ Pi (recommend upstreaming to the picam setup):
   just means a new socket after a reconnect, which is healthy).
 - `stream-watchdog.service` (oneshot) + `stream-watchdog.timer`
   (`OnBootSec=2min`, `OnUnitActiveSec=1min`), enabled.
-- Optional dead-man's-switch: if `/etc/default/stream-watchdog` defines
-  `HEALTHCHECK_URL` (e.g. a Healthchecks.io or UptimeRobot heartbeat URL), the
-  watchdog pings it on every *healthy* check — so an external monitor alerts
-  when the whole Pi drops off the network, the one case no on-device logic can
-  handle. A commented template now lives in `/etc/default/stream-watchdog` on
-  the Pi; uncomment `HEALTHCHECK_URL=` and drop the ping URL in (suggested
-  monitor settings: period 5 min, grace 10 min). Both `hc-ping.com` and
-  `heartbeat.uptimerobot.com` are reachable from the Pi (verified 2026-07-06).
+- Dead-man's-switch (wired 2026-07-07): `/etc/default/stream-watchdog` defines
+  `HEALTHCHECK_URL` (a Healthchecks.io ping URL), and the watchdog pings it on
+  every *healthy* check — so the external monitor alerts when the whole Pi
+  drops off the network, the one case no on-device logic can handle. Delivery
+  verified from the Pi (HTTP 200) with the exact curl invocation the watchdog
+  uses. The file is `chmod 600 root:root` since the ping URL itself must stay
+  secret (anyone holding it can fake healthy pings). Suggested monitor
+  settings: period 5 min, grace 10 min — a successful watchdog self-heal
+  (~7 min worst-case gap) then never pages; only a real outage does.
 - Restart budget (guard against broadcast churn): each watchdog restart runs
   `end`→`create`, i.e. spawns a fresh YouTube broadcast. To make a persistent
   stall (e.g. degraded-but-up network) physically unable to spawn an endless
@@ -177,3 +178,21 @@ could produce.
 Note on periodic speed tests: avoid full-bandwidth tests (e.g. `speedtest`) on
 this Pi — they saturate the Zero 2 W's uplink and compete with the live RTMP
 upload, causing the very stalls being monitored for.
+
+## 8. `device.py`: reap the old pipeline processes on internal retry
+
+Observed in production 2026-07-06 22:28 MDT: YouTube dropped the RTMP socket
+(`Error writing trailer: End of file` / `Broken pipe` from ffmpeg), and
+`device.py`'s internal retry loop recovered within one second — it terminated
+the dead pipeline, restarted `rpicam-vid`+`ffmpeg`, and kept streaming to the
+**same** broadcast (no Lambda `end`/`create`, no new YouTube video, no watchdog
+intervention). This is exactly the desired layering: transient RTMP drops are
+absorbed by `device.py`; only a genuinely wedged pipeline escalates to the
+watchdog (fresh broadcast); only a dead/off-network Pi escalates to the
+heartbeat monitor.
+
+One cosmetic bug in that path: after `Terminating processes..`, `device.py`
+never `wait()`s on the old `rpicam-vid`, leaving a `<defunct>` zombie per retry
+(parented to `device.py`, so they accumulate until the next service restart or
+reboot). Fix upstream: call `proc.wait(timeout=...)` on each terminated child
+in the retry path.
