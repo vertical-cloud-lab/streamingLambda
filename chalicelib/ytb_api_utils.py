@@ -100,9 +100,9 @@ def create_broadcast_and_bind_stream(cam_name: str,workflow_name: str, privacy_s
     formatted_time = datetime.utcnow().strftime("%Y-%m-%d UTC %H:%M")
     broadcast_title = f"{workflow_name} stream {cam_name}, {formatted_time}"
     broadcast_description = (
-        f"Live camera feed from {workflow_name} stationed in Toronto, ON "
-        "at the Acceleration Consortium (AC).\n\n"
-        "https://acceleration.utoronto.ca/"
+        f"Live camera feed from {workflow_name} stationed at "
+        "the Vertical Cloud Lab @ BYU\n\n"
+        "https://github.com/vertical-cloud-lab"
     )
 
     broadcast_response = YOUTUBE.liveBroadcasts().insert(
