@@ -1,3 +1,4 @@
+import os
 import boto3
 import pickle
 import time
@@ -9,8 +10,8 @@ SCOPES = ["https://www.googleapis.com/auth/youtube"]
 CHANNEL_ID = "UCHBzCfYpGwoqygH9YNh9A6g"
 
 YOUTUBE = None
-S3_BUCKET = "ac-token-youtube-api"
-S3_KEY = "token/token.pickle"
+S3_BUCKET = os.environ.get("YOUTUBE_TOKEN_S3_BUCKET", "ac-token-youtube-api")
+S3_KEY = os.environ.get("YOUTUBE_TOKEN_S3_KEY", "token/token.pickle")
 
 def init_youtube_service():
     global YOUTUBE
@@ -99,9 +100,9 @@ def create_broadcast_and_bind_stream(cam_name: str,workflow_name: str, privacy_s
     formatted_time = datetime.utcnow().strftime("%Y-%m-%d UTC %H:%M")
     broadcast_title = f"{workflow_name} stream {cam_name}, {formatted_time}"
     broadcast_description = (
-        f"Live camera feed from {workflow_name} stationed in Toronto, ON "
-        "at the Acceleration Consortium (AC).\n\n"
-        "https://acceleration.utoronto.ca/"
+        f"Live camera feed from {workflow_name} stationed at "
+        "the Vertical Cloud Lab @ BYU\n\n"
+        "https://github.com/vertical-cloud-lab"
     )
 
     broadcast_response = YOUTUBE.liveBroadcasts().insert(

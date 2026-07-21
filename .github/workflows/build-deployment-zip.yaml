@@ -1,0 +1,68 @@
+name: Build Lambda Deployment Package
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required to upload assets to releases
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Create dependencies directory
+        run: mkdir -p dependencies
+
+      - name: Install dependencies
+        # Pin the target platform to AWS Lambda's runtime (x86_64/manylinux,
+        # CPython 3.12) so binary wheels such as cryptography's _rust.abi3.so
+        # match Lambda regardless of the build host's architecture. Keep
+        # --python-version in sync with the function's configured runtime.
+        run: |
+          pip install \
+            --platform manylinux2014_x86_64 \
+            --implementation cp \
+            --python-version 3.12 \
+            --only-binary=:all: \
+            --target ./dependencies \
+            boto3 \
+            google-api-python-client \
+            google-auth \
+            google-auth-oauthlib \
+            google-auth-httplib2
+
+      - name: Copy lambda function and chalicelib
+        run: |
+          cp lambda_function.py dependencies/
+          cp -r chalicelib dependencies/
+
+      - name: Create deployment package
+        run: |
+          cd dependencies
+          zip -r ../deployment.zip .
+          cd ..
+
+      - name: Upload deployment package as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lambda-deployment-package
+          path: deployment.zip
+          retention-days: 90
+
+      - name: Upload deployment package to release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: deployment.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
