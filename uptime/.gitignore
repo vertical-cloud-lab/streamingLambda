@@ -1,0 +1,4 @@
+# channel metadata includes private/unlisted video ids; regenerate with fetch_broadcasts.py
+broadcasts.json
+videos.json
+results/

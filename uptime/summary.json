@@ -1,0 +1,458 @@
+{
+ "OT-2": {
+  "window_start": "2026-07-31T00:02:32-06:00",
+  "window_end": "2026-09-25T15:20:33-06:00",
+  "window_s": 4893482,
+  "not_analyzed_s": 0,
+  "unique_s": 4735249,
+  "uptime": 0.9676645382572164,
+  "down_s": 158233,
+  "down_in_broadcast_s": 127943,
+  "down_no_broadcast_s": 30290,
+  "broadcasts": 179,
+  "videos_read": 178,
+  "videos_missing": [],
+  "ambiguous_jumps": 285,
+  "misreads_dropped": 2,
+  "unreadable_frames": 0,
+  "frames": 24294849,
+  "gaps": 463,
+  "causes": {
+   "scheduled reboot/rotation": {
+    "n": 156,
+    "s": 11163
+   },
+   "blip < 10 s": {
+    "n": 236,
+    "s": 642
+   },
+   "broadcast live but no frames": {
+    "n": 68,
+    "s": 118869
+   },
+   "no broadcast": {
+    "n": 3,
+    "s": 27559
+   }
+  },
+  "gap_buckets": {
+   "<10 s": {
+    "n": 236,
+    "s": 642
+   },
+   "10 s-2 min": {
+    "n": 201,
+    "s": 12952
+   },
+   "2-30 min": {
+    "n": 10,
+    "s": 1701
+   },
+   "30 min-2 h": {
+    "n": 11,
+    "s": 41505
+   },
+   ">2 h": {
+    "n": 5,
+    "s": 101433
+   }
+  },
+  "largest_gaps": [
+   {
+    "start": "2026-09-24 13:22:38",
+    "dur": "7.6 h",
+    "dur_s": 27522,
+    "no_broadcast_s": 27492,
+    "cause": "no broadcast"
+   },
+   {
+    "start": "2026-09-19 23:00:24",
+    "dur": "6.0 h",
+    "dur_s": 21648,
+    "no_broadcast_s": 16,
+    "cause": "broadcast live but no frames"
+   },
+   {
+    "start": "2026-09-18 15:30:50",
+    "dur": "5.5 h",
+    "dur_s": 19822,
+    "no_broadcast_s": 16,
+    "cause": "broadcast live but no frames"
+   },
+   {
+    "start": "2026-07-31 08:30:48",
+    "dur": "4.5 h",
+    "dur_s": 16221,
+    "no_broadcast_s": 14,
+    "cause": "broadcast live but no frames"
+   },
+   {
+    "start": "2026-09-11 08:30:50",
+    "dur": "4.5 h",
+    "dur_s": 16220,
+    "no_broadcast_s": 14,
+    "cause": "broadcast live but no frames"
+   },
+   {
+    "start": "2026-09-25 13:10:10",
+    "dur": "108 min",
+    "dur_s": 6475,
+    "no_broadcast_s": 17,
+    "cause": "broadcast live but no frames"
+   },
+   {
+    "start": "2026-09-10 11:30:50",
+    "dur": "99 min",
+    "dur_s": 5917,
+    "no_broadcast_s": 14,
+    "cause": "broadcast live but no frames"
+   },
+   {
+    "start": "2026-09-04 11:30:48",
+    "dur": "90 min",
+    "dur_s": 5423,
+    "no_broadcast_s": 14,
+    "cause": "broadcast live but no frames"
+   },
+   {
+    "start": "2026-09-13 11:30:50",
+    "dur": "90 min",
+    "dur_s": 5421,
+    "no_broadcast_s": 14,
+    "cause": "broadcast live but no frames"
+   },
+   {
+    "start": "2026-08-27 06:13:54",
+    "dur": "79 min",
+    "dur_s": 4764,
+    "no_broadcast_s": 17,
+    "cause": "broadcast live but no frames"
+   },
+   {
+    "start": "2026-09-24 11:58:20",
+    "dur": "63 min",
+    "dur_s": 3784,
+    "no_broadcast_s": 14,
+    "cause": "broadcast live but no frames"
+   },
+   {
+    "start": "2026-09-23 12:35:02",
+    "dur": "41 min",
+    "dur_s": 2435,
+    "no_broadcast_s": 14,
+    "cause": "broadcast live but no frames"
+   },
+   {
+    "start": "2026-09-16 12:30:48",
+    "dur": "30 min",
+    "dur_s": 1823,
+    "no_broadcast_s": 15,
+    "cause": "broadcast live but no frames"
+   },
+   {
+    "start": "2026-08-13 04:30:50",
+    "dur": "30 min",
+    "dur_s": 1821,
+    "no_broadcast_s": 15,
+    "cause": "broadcast live but no frames"
+   },
+   {
+    "start": "2026-08-15 12:30:50",
+    "dur": "30 min",
+    "dur_s": 1821,
+    "no_broadcast_s": 15,
+    "cause": "broadcast live but no frames"
+   }
+  ]
+ },
+ "powder doser": {
+  "window_start": "2026-07-30T13:22:09-06:00",
+  "window_end": "2026-09-25T13:00:51-06:00",
+  "window_s": 4923523,
+  "not_analyzed_s": 0,
+  "unique_s": 4763206,
+  "uptime": 0.9674385597467504,
+  "down_s": 160317,
+  "down_in_broadcast_s": 106787,
+  "down_no_broadcast_s": 53530,
+  "broadcasts": 178,
+  "videos_read": 177,
+  "videos_missing": [],
+  "ambiguous_jumps": 100,
+  "misreads_dropped": 1,
+  "unreadable_frames": 0,
+  "frames": 24828891,
+  "gaps": 277,
+  "causes": {
+   "scheduled reboot/rotation": {
+    "n": 158,
+    "s": 10131
+   },
+   "blip < 10 s": {
+    "n": 85,
+    "s": 301
+   },
+   "broadcast live but no frames": {
+    "n": 32,
+    "s": 98932
+   },
+   "no broadcast": {
+    "n": 2,
+    "s": 50953
+   }
+  },
+  "gap_buckets": {
+   "<10 s": {
+    "n": 85,
+    "s": 301
+   },
+   "10 s-2 min": {
+    "n": 171,
+    "s": 10536
+   },
+   "2-30 min": {
+    "n": 5,
+    "s": 4908
+   },
+   "30 min-2 h": {
+    "n": 9,
+    "s": 29493
+   },
+   ">2 h": {
+    "n": 7,
+    "s": 115079
+   }
+  },
+  "largest_gaps": [
+   {
+    "start": "2026-09-24 13:22:42",
+    "dur": "7.6 h",
+    "dur_s": 27533,
+    "no_broadcast_s": 27502,
+    "cause": "no broadcast"
+   },
+   {
+    "start": "2026-09-19 22:30:44",
+    "dur": "6.5 h",
+    "dur_s": 23420,
+    "no_broadcast_s": 23409,
+    "cause": "no broadcast"
+   },
+   {
+    "start": "2026-07-31 08:30:44",
+    "dur": "4.5 h",
+    "dur_s": 16221,
+    "no_broadcast_s": 14,
+    "cause": "broadcast live but no frames"
+   },
+   {
+    "start": "2026-09-15 00:30:44",
+    "dur": "4.5 h",
+    "dur_s": 16221,
+    "no_broadcast_s": 14,
+    "cause": "broadcast live but no frames"
+   },
+   {
+    "start": "2026-09-11 08:59:52",
+    "dur": "4.0 h",
+    "dur_s": 14473,
+    "no_broadcast_s": 14,
+    "cause": "broadcast live but no frames"
+   },
+   {
+    "start": "2026-08-10 10:30:44",
+    "dur": "2.5 h",
+    "dur_s": 9022,
+    "no_broadcast_s": 15,
+    "cause": "broadcast live but no frames"
+   },
+   {
+    "start": "2026-08-11 12:04:36",
+    "dur": "2.3 h",
+    "dur_s": 8189,
+    "no_broadcast_s": 72,
+    "cause": "broadcast live but no frames"
+   },
+   {
+    "start": "2026-09-03 11:51:02",
+    "dur": "106 min",
+    "dur_s": 6373,
+    "no_broadcast_s": 14,
+    "cause": "broadcast live but no frames"
+   },
+   {
+    "start": "2026-09-10 11:30:44",
+    "dur": "90 min",
+    "dur_s": 5421,
+    "no_broadcast_s": 14,
+    "cause": "broadcast live but no frames"
+   },
+   {
+    "start": "2026-08-27 06:13:54",
+    "dur": "79 min",
+    "dur_s": 4758,
+    "no_broadcast_s": 14,
+    "cause": "broadcast live but no frames"
+   },
+   {
+    "start": "2026-09-24 11:58:21",
+    "dur": "63 min",
+    "dur_s": 3793,
+    "no_broadcast_s": 14,
+    "cause": "broadcast live but no frames"
+   },
+   {
+    "start": "2026-08-13 04:30:06",
+    "dur": "31 min",
+    "dur_s": 1860,
+    "no_broadcast_s": 14,
+    "cause": "broadcast live but no frames"
+   },
+   {
+    "start": "2026-08-15 12:30:44",
+    "dur": "30 min",
+    "dur_s": 1823,
+    "no_broadcast_s": 15,
+    "cause": "broadcast live but no frames"
+   },
+   {
+    "start": "2026-08-16 12:30:44",
+    "dur": "30 min",
+    "dur_s": 1822,
+    "no_broadcast_s": 14,
+    "cause": "broadcast live but no frames"
+   },
+   {
+    "start": "2026-09-16 12:30:44",
+    "dur": "30 min",
+    "dur_s": 1822,
+    "no_broadcast_s": 14,
+    "cause": "broadcast live but no frames"
+   }
+  ]
+ },
+ "shared_downtime": {
+  "both_down_s": 111611,
+  "OT-2_down_s": 151552,
+  "powder doser_down_s": 160239
+ },
+ "broadcast_coverage_all_devices": {
+  "OT-2": {
+   "first": "2026-07-31 00:02",
+   "last": "2026-09-25 15:20",
+   "broadcasts": 179,
+   "privacy": [
+    "public"
+   ],
+   "window_h": 1359.3,
+   "broadcast_h": 1350.6,
+   "coverage": 0.9936
+  },
+  "aurora-4yz0": {
+   "first": "2026-07-28 09:51",
+   "last": "2026-08-12 09:14",
+   "broadcasts": 50,
+   "privacy": [
+    "private",
+    "unlisted"
+   ],
+   "window_h": 359.4,
+   "broadcast_h": 359.1,
+   "coverage": 0.9992
+  },
+  "aurora-7yvn": {
+   "first": "2026-07-28 09:54",
+   "last": "2026-08-12 09:14",
+   "broadcasts": 6,
+   "privacy": [
+    "private",
+    "unlisted"
+   ],
+   "window_h": 359.3,
+   "broadcast_h": 359.3,
+   "coverage": 0.9999
+  },
+  "aurora-ca3u": {
+   "first": "2026-07-28 09:51",
+   "last": "2026-08-12 09:14",
+   "broadcasts": 4,
+   "privacy": [
+    "private",
+    "unlisted"
+   ],
+   "window_h": 359.4,
+   "broadcast_h": 359.4,
+   "coverage": 1.0
+  },
+  "aurora-syyd": {
+   "first": "2026-07-28 09:58",
+   "last": "2026-08-11 11:44",
+   "broadcasts": 8,
+   "privacy": [
+    "private",
+    "unlisted"
+   ],
+   "window_h": 337.8,
+   "broadcast_h": 327.4,
+   "coverage": 0.9693
+  },
+  "aurora-y5hk": {
+   "first": "2026-07-28 09:56",
+   "last": "2026-08-12 09:14",
+   "broadcasts": 6,
+   "privacy": [
+    "private",
+    "unlisted"
+   ],
+   "window_h": 359.3,
+   "broadcast_h": 349.9,
+   "coverage": 0.9739
+  },
+  "aurora-yubw": {
+   "first": "2026-07-28 09:56",
+   "last": "2026-08-12 09:14",
+   "broadcasts": 6,
+   "privacy": [
+    "private",
+    "unlisted"
+   ],
+   "window_h": 359.3,
+   "broadcast_h": 359.3,
+   "coverage": 0.9999
+  },
+  "office cam": {
+   "first": "2026-07-03 08:24",
+   "last": "2026-07-30 13:21",
+   "broadcasts": 93,
+   "privacy": [
+    "private",
+    "unlisted"
+   ],
+   "window_h": 652.9,
+   "broadcast_h": 652.4,
+   "coverage": 0.9992
+  },
+  "pose-2026": {
+   "first": "2026-07-02 16:28",
+   "last": "2026-07-02 23:24",
+   "broadcasts": 1,
+   "privacy": [
+    "private"
+   ],
+   "window_h": 6.9,
+   "broadcast_h": 6.9,
+   "coverage": 1.0
+  },
+  "powder doser": {
+   "first": "2026-07-30 13:22",
+   "last": "2026-09-25 13:00",
+   "broadcasts": 178,
+   "privacy": [
+    "public"
+   ],
+   "window_h": 1367.6,
+   "broadcast_h": 1352.5,
+   "coverage": 0.9889
+  }
+ }
+}
