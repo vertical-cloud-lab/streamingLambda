@@ -30,6 +30,28 @@ powder doser 98.1 %, 94.9 %, 92.8 %.
 - The two "no broadcast" outages are 09-24 13:22–21:01 (both cameras; the DNS outage described in
   byu-vcl#202) and 09-19 22:30–09-20 05:01 (powder doser; it also starts at hh:30:44).
 
+## Root cause
+
+The Pi journals explain the hh:30:44 stalls. A bogus ARP packet from `00:00:00:00:00:00` claims the
+Pi's own address. NetworkManager's address conflict detection then drops the address at a DHCP renewal,
+so the Pi is offline for about 53 min. `device.py` fails to start 3 times and systemd gives up, so the
+stream stays down until the next reboot. The full sequence, and the fixes (ACD off, and a watchdog that
+restarts a failed unit), are in [`../pi/README.md`](../pi/README.md). `root_cause.py` assigns every gap
+to a cause:
+
+| cause | OT-2 | powder doser |
+|---|---|---|
+| address dropped at DHCP renewal | 21.2 h (10) | 21.6 h (9) |
+| campus DNS outage (09-24) | 8.7 h (2) | 8.7 h (2) |
+| power loss / unclean reboot | 2.5 h (2) | 0.0 h (0) |
+| other stall >= 10 min | 7.3 h (2) | 11.2 h (9) |
+| scheduled reboots | 3.1 h (156) | 2.8 h (158) |
+| short gaps < 10 min | 1.1 h (291) | 0.2 h (99) |
+| uptime | 96.77% | 96.74% |
+| uptime without renewal drops | 98.33% | 98.32% |
+
+![root cause](plots/root_cause.png)
+
 ## Plots
 
 ![daily](plots/daily_uptime.png)
@@ -52,6 +74,7 @@ powder doser 98.1 %, 94.9 %, 92.8 %.
   decode found 0 and 3 more seconds (of ~28,700). "Ambiguous" jumps, where B-frames could have held an
   extra label, number 285 + 100 in total. That is at most ~0.01 % of uptime.
 - `analyze.py`: builds `summary.json`, `gaps.csv` (every gap, with its cause), `videos.csv` and `plots/`.
+- `root_cause.py`: reads `gaps.csv` and assigns each gap to a root cause (`root_cause.json`, `plots/root_cause.png`).
 
 ## Not covered
 
