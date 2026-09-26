@@ -8,7 +8,7 @@
 ## Root cause of the long stalls
 
 The Pi journals (kept since 09-15 on the powder doser and 09-20 on the OT-2) show the same sequence
-every time. [`journal-evidence.log`](journal-evidence.log) has the lines.
+every time. [`journal-evidence.txt`](journal-evidence.txt) has the lines.
 
 1. **A bogus ARP "conflict".** Something on the campus Wi-Fi sends an ARP packet claiming the Pi's own
    IP address from MAC `00:00:00:00:00:00`. NetworkManager's IPv4 address conflict detection (ACD,
