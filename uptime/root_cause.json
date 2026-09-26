@@ -1,0 +1,58 @@
+{
+ "OT-2": {
+  "address dropped at DHCP renewal": {
+   "s": 76310,
+   "n": 10
+  },
+  "campus DNS outage (09-24)": {
+   "s": 31306,
+   "n": 2
+  },
+  "power loss / unclean reboot": {
+   "s": 8910,
+   "n": 2
+  },
+  "other stall >= 10 min": {
+   "s": 26412,
+   "n": 2
+  },
+  "scheduled reboots": {
+   "s": 11163,
+   "n": 156
+  },
+  "short gaps < 10 min": {
+   "s": 4132,
+   "n": 291
+  },
+  "_uptime": 0.9676645382572164,
+  "_uptime_without_renewal_drops": 0.9832587511305856
+ },
+ "powder doser": {
+  "address dropped at DHCP renewal": {
+   "s": 77593,
+   "n": 9
+  },
+  "campus DNS outage (09-24)": {
+   "s": 31326,
+   "n": 2
+  },
+  "power loss / unclean reboot": {
+   "s": 0,
+   "n": 0
+  },
+  "other stall >= 10 min": {
+   "s": 40408,
+   "n": 9
+  },
+  "scheduled reboots": {
+   "s": 10131,
+   "n": 158
+  },
+  "short gaps < 10 min": {
+   "s": 859,
+   "n": 99
+  },
+  "_uptime": 0.9674385597467504,
+  "_uptime_without_renewal_drops": 0.9831982098996999
+ }
+}
