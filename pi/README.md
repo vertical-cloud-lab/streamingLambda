@@ -59,7 +59,7 @@ In the whole 57-day record, gaps of at least 10 min that start 40–60 s after h
 
 | Pi | watchdog | ACD off |
 |---|---|---|
-| powder doser | installed 2026-09-26 03:06 MDT. Self-test passed on the Pi. It started the stream at 03:06:52 | installed 2026-09-26 03:07 MDT; `NetworkManager --print-config` shows it; active from the 05:00 reboot |
+| powder doser | installed 2026-09-26 03:06 MDT. Self-test passed on the Pi. It started the stream at 03:06:52. Replaced on 2026-10-20 at 23:53 MDT by the version with the Wi-Fi step (below) | installed 2026-09-26 03:07 MDT; `NetworkManager --print-config` shows it; active from the 05:00 reboot |
 | OT-2 | installed 2026-09-25 15:56 MDT (byu-vcl#202) | **not yet**: this repo has no sudo password for that Pi |
 
 To install on the OT-2 Pi (or any other), from this directory:
@@ -73,8 +73,9 @@ To check that ACD is off after a reboot: `journalctl -b -u NetworkManager | grep
 print nothing. Before the change, every boot logged `new lease, address=..., acd pending`.
 
 To undo on the powder doser:
-`sudo rm /etc/NetworkManager/conf.d/no-ipv4-acd.conf` and
-`sudo install -m 755 /var/backups/stream-watchdog.sh.2026-09-26 /usr/local/bin/stream-watchdog.sh`.
+`sudo rm /etc/NetworkManager/conf.d/no-ipv4-acd.conf`, and
+`sudo install -m 755 /var/backups/stream-watchdog.sh.2026-10-21 /usr/local/bin/stream-watchdog.sh` for the
+09-26 watchdog (no Wi-Fi step), or the same with `.2026-09-26` for the original one (stall check only).
 
 ## 2026-10-20: the Wi-Fi driver refused to reconnect for 5 h 44 min
 
@@ -110,7 +111,7 @@ roams come from wpa_supplicant.
 
 The ACD fix above is holding: none of the 36 boots since 10-09 logged a `conflict detected`.
 
-### Proposed: reset the Wi-Fi, then reboot (in this directory, not installed yet)
+### Reset the Wi-Fi, then reboot (installed on the powder doser 2026-10-20 23:53 MDT)
 
 [`stream-watchdog.sh`](stream-watchdog.sh) now starts with a Wi-Fi step. If NetworkManager reports
 `wlan0` as not connected for 10 min, it turns the radio off and on (`nmcli radio wifi off`, then
@@ -121,16 +122,38 @@ is skipped. With this, an outage like 10-20 would have lasted at most about 25 m
 radio reset alone is enough can't be tested until the fault recurs. If the whole campus Wi-Fi is down,
 the reboots don't help but cost little, and the budget stops them after 3.
 
-- [`test-wifi-recovery.sh`](test-wifi-recovery.sh) runs the Wi-Fi step against stand-ins for `nmcli` and
-  `systemctl` (no root, nothing real touched): 11/11 pass.
-- [`test-stream-watchdog.sh`](test-stream-watchdog.sh) points the Wi-Fi step at a nonexistent interface
-  and still passes in full (run on a GitHub Actions runner).
+Tests on the powder-doser Pi itself (bash 5.2.37, nmcli 1.52.1, systemd 257), on the night of 10-20:
 
-To install on the powder doser, from this directory:
+| test | result |
+|---|---|
+| [`test-wifi-recovery.sh`](test-wifi-recovery.sh): the Wi-Fi step against stand-ins for `nmcli` and `systemctl` (no root, nothing real touched) | 11/11 pass |
+| [`test-stream-watchdog.sh`](test-stream-watchdog.sh) (as root): the restart paths against a throwaway unit, with the Wi-Fi step pointed at a nonexistent interface | 24/24 pass, in 69 s |
+| the radio reset by hand while streaming (`nmcli radio wifi off`, 5 s, `on`, as the script does it) | `wlan0` down for 7.4 s, connected again 1.2 s after `on`, same address. The RTMP connection survived, and `device.service` wasn't restarted |
+| a fault only a reboot clears: the Wi-Fi profile pinned to a nonexistent access point in memory only (`nmcli connection modify --temporary byu-devices 802-11-wireless.bssid 02:00:00:00:00:01`), then `nmcli device disconnect wlan0` | ffmpeg streaming again 21 min 45 s later, after the watchdog's reboot (below) |
+
+The last test, from the Pi's journal:
+
+| time (MDT) | what happened |
+|---|---|
+| 23:56:45 | `wlan0` disconnected (the injected fault) |
+| 00:00:24 | stall check: no RTMP progress for 3 checks, so it restarts `device.service` (restart 2/6). `device.py` can't reach the Lambda, and systemd marks the unit `failed` at 00:01:02 |
+| 00:07:26 | Wi-Fi step: "no connection for 10 min", radio off, then on 5 s later. `wlan0` comes back `disconnected`, as expected with the pin in place |
+| 00:12:06–00:16:26 | failed-unit step: `waiting for the network`, 5 times |
+| 00:17:26 | Wi-Fi step: "no connection for 20 min", reboot (1/3 in 24 h) |
+| 00:17:35 | kernel starts. The in-memory pin is gone |
+| 00:17:56 | `wlan0` connected, same address, and `device.service` starts |
+| 00:18:30 | Lambda `end` and `create` done, ffmpeg starts |
+| 00:21:56 | first check after the 180 s grace: RTMP bytes moving, Healthchecks ping sent without error |
+
+A one-off timer armed for the test (reboot at 00:29:44 if `wlan0` was still down) went away with the
+watchdog's reboot and never fired. The test's entries in `/var/lib/stream-watchdog/restarts` and
+`reboots` were deleted afterwards, so the full budgets are available.
+
+To install on another Pi, from this directory:
 
 ```sh
-scp stream-watchdog.sh <user>@rpi-zero2w-stream-cam-d1pr:/tmp/
-ssh <user>@rpi-zero2w-stream-cam-d1pr 'sudo cp /usr/local/bin/stream-watchdog.sh /var/backups/stream-watchdog.sh.2026-10-21 && sudo install -m 755 /tmp/stream-watchdog.sh /usr/local/bin/'
+scp stream-watchdog.sh <user>@<pi>:/tmp/
+ssh <user>@<pi> 'sudo cp /usr/local/bin/stream-watchdog.sh /var/backups/stream-watchdog.sh.$(date +%F) && sudo install -m 755 /tmp/stream-watchdog.sh /usr/local/bin/'
 ```
 
 The other option is fewer roams. One way is to put the Pi where one access point is clearly the
