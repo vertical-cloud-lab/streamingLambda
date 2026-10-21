@@ -37,13 +37,17 @@ sed -e "s|^SERVICE=.*|SERVICE=$UNIT|" \
     -e "s|^GRACE_SEC=[0-9]*|GRACE_SEC=2|" \
     -e "s|^RETRY_SEC=[0-9]*|RETRY_SEC=5|" \
     -e "s|^NET_CHECK=[^ ]*|NET_CHECK=127.0.0.1/$NET_PORT|" \
+    -e "s|^WIFI_IF=.*|WIFI_IF=selftest-none|" \
+    -e "s|^WIFI_STATE=[^ ]*|WIFI_STATE=$TMP/wifi|" \
+    -e "s|^REBOOT_HIST=.*|REBOOT_HIST=$TMP/reboots|" \
     -e "s|/etc/default/stream-watchdog|$TMP/default|g" \
     -e "s|logger -t stream-watchdog |logger -t stream-watchdog-selftest |" \
     -e "s|dport = :1935|dport = :9|" \
     "$SRC" > "$TMP/wd.sh"
 # refuse to run if any substitution missed, rather than touch device.service
 for want in "^SERVICE=$UNIT\$" "^STATE=$TMP/state\$" "^HIST=$TMP/restarts\$" \
-            "^RETRY_SEC=5 " "^NET_CHECK=127.0.0.1/$NET_PORT " "stream-watchdog-selftest" "dport = :9 "; do
+            "^RETRY_SEC=5 " "^NET_CHECK=127.0.0.1/$NET_PORT " "stream-watchdog-selftest" "dport = :9 " \
+            "^WIFI_IF=selftest-none\$" "^WIFI_STATE=$TMP/wifi " "^REBOOT_HIST=$TMP/reboots\$"; do
     grep -q -- "$want" "$TMP/wd.sh" || { echo "could not rewrite $SRC ($want)" >&2; exit 2; }
 done
 if grep -v '^[[:space:]]*#' "$TMP/wd.sh" | grep -q 'device\.service'; then

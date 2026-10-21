@@ -76,6 +76,66 @@ To undo on the powder doser:
 `sudo rm /etc/NetworkManager/conf.d/no-ipv4-acd.conf` and
 `sudo install -m 755 /var/backups/stream-watchdog.sh.2026-09-26 /usr/local/bin/stream-watchdog.sh`.
 
+## 2026-10-20: the Wi-Fi driver refused to reconnect for 5 h 44 min
+
+The powder-doser stream stopped at 15:12:42 MDT and only came back after the 21:00 scheduled reboot
+([powder-doser#186](https://github.com/vertical-cloud-lab/powder-doser/issues/186#issuecomment-6305840509)).
+The Pi's journal ([`journal-evidence-2026-10-20.txt`](journal-evidence-2026-10-20.txt); access points
+are labelled AP-A to AP-D) shows:
+
+1. **A roam failed.** At 15:12:27 wpa_supplicant tried to move from AP-A to AP-C (both on channel 6).
+   AP-C didn't answer, and the driver reported the connect as failed (`ASSOC-REJECT ... status_code=16`,
+   which brcmfmac uses for any failed connect). The Zero on the same bench also switched access points
+   0.6 s later, so something on the network side probably set off both.
+2. **The kernel kept the old connection, so every reconnect was refused.** The other three times the
+   link dropped while the Pi was running (10-19 12:29:13, 10-20 14:47:23, and an identical failed roam
+   on 10-19 16:31:14), the kernel logged `CTRL-EVENT-REGDOM-CHANGE init=CORE` 7–13 ms later. That's the
+   regulatory reset it does when a link goes away, and each time the next attempt connected (0.2 s after
+   the 10-19 roam). On 10-20 it never came. From then on, all 418 association attempts, until 20:56,
+   failed within 2.5 ms (at most 7 ms) with `Association request to the driver failed`. The kernel logged
+   nothing, and the firmware didn't crash. NetworkManager kept retrying, four tries 26 s apart and then a
+   5-min pause, 207 times in all.
+3. **The watchdog worked as designed but couldn't help.** It restarted `device.service` at 15:16:25.
+   `device.py` couldn't resolve DNS, systemd hit the start limit at 15:17:03, and from 15:27 to 20:59 the
+   watchdog logged `waiting for the network` 301 times. Nothing reset the Wi-Fi until the reboot.
+
+**Why roams happen at all now:** from 10-09 to 10-16 the Pi stayed on AP-C with no roams. At
+10-16 10:12 it lost power (no shutdown sequence; the journal was "uncleanly shut down"), so it was
+probably unplugged or moved. Since then it has switched between AP-A (channel 6) and AP-B (channel 1)
+1–8 times a day. In today's scan those two are about equally strong, around −57 to −63 dBm. That's
+close to −65 dBm, the level below which NetworkManager's background scan (`bgscan simple:30:-65:300`)
+looks for a better access point every 30 s. AP-C is now the weakest of the three, at about −72 dBm. The firmware's own roaming
+is already off (`roamoff=1`, the Raspberry Pi default), so all of these roams come from wpa_supplicant.
+
+The ACD fix above is holding: none of the 36 boots since 10-09 logged a `conflict detected`.
+
+### Proposed: reset the Wi-Fi, then reboot (in this directory, not installed yet)
+
+[`stream-watchdog.sh`](stream-watchdog.sh) now starts with a Wi-Fi step. If NetworkManager reports
+`wlan0` as not connected for 10 min, it turns the radio off and on (`nmcli radio wifi off/on`, which
+takes the interface down and back up). After 20 min it reboots, at most 3 times per rolling 24 h
+(`MAX_REBOOTS_PER_DAY`, kept in `/var/lib/stream-watchdog/reboots`). If `nmcli` gives no answer, the step
+is skipped. With this, an outage like 10-20 would have lasted about 20 min instead of 5 h 48 min. The
+reboot is the step known to clear this fault, since the scheduled one did. Whether the radio reset alone
+is enough can't be tested until the fault recurs.
+
+- [`test-wifi-recovery.sh`](test-wifi-recovery.sh) runs the Wi-Fi step against stand-ins for `nmcli` and
+  `systemctl` (no root, nothing real touched): 11/11 pass.
+- [`test-stream-watchdog.sh`](test-stream-watchdog.sh) points the Wi-Fi step at a nonexistent interface
+  and still passes in full (run on a GitHub Actions runner).
+
+To install on the powder doser, from this directory:
+
+```sh
+scp stream-watchdog.sh <user>@rpi-zero2w-stream-cam-d1pr:/tmp/
+ssh <user>@rpi-zero2w-stream-cam-d1pr 'sudo cp /usr/local/bin/stream-watchdog.sh /var/backups/stream-watchdog.sh.2026-10-21 && sudo install -m 755 /tmp/stream-watchdog.sh /usr/local/bin/'
+```
+
+The other option is fewer roams. One way is to put the Pi where one access point is clearly the
+strongest; it was stable for a week before 10-16. Another is to pin it to one access point
+(`nmcli c modify byu-devices 802-11-wireless.bssid <AP>`), which also stops NetworkManager's background
+scans. The cost is that the Pi then won't move when that access point fails.
+
 ## Open questions
 
 - **What sends the `00:00:00:00:00:00` ARP?** It's most likely the campus wireless controller or

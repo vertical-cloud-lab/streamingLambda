@@ -8,6 +8,11 @@
 # - device.py exits on every start (e.g. DNS is down, so its Lambda call
 #   fails), systemd hits StartLimitBurst and marks the unit failed, and
 #   nothing else starts it again until the next scheduled reboot.
+# - the Wi-Fi itself never reconnects. After a failed roam the Wi-Fi driver
+#   can refuse every new association until it is reset (2026-10-20: 5 h 44 min,
+#   until the scheduled reboot). Waiting for the network can't fix that, so the
+#   radio is turned off and on after WIFI_RESET_SEC without a connection, and
+#   the Pi reboots after WIFI_REBOOT_SEC.
 
 STATE=/run/stream-watchdog.state
 HIST=/var/lib/stream-watchdog/restarts
@@ -16,11 +21,18 @@ STALL_LIMIT=3   # consecutive failed 1-min checks before restarting
 GRACE_SEC=180   # leave a freshly (re)started service alone
 RETRY_SEC=600   # leave a freshly failed service alone
 NET_CHECK=a.rtmp.youtube.com/1935   # must accept a TCP connection before a failed service is retried
+WIFI_IF=wlan0
+WIFI_STATE=/run/stream-watchdog.wifi   # "<down since, s after boot> <radio reset done 0/1>"
+WIFI_RESET_SEC=600    # no Wi-Fi connection this long: radio off and on
+WIFI_REBOOT_SEC=1200  # still none this long: reboot
+REBOOT_HIST=/var/lib/stream-watchdog/reboots
 
 # optional overrides: HEALTHCHECK_URL (dead-man's-switch ping, Healthchecks.io
-# etc.) and MAX_RESTARTS_PER_DAY (watchdog restart budget, rolling 24h)
+# etc.), MAX_RESTARTS_PER_DAY (watchdog restart budget, rolling 24h) and
+# MAX_REBOOTS_PER_DAY (Wi-Fi reboot budget, rolling 24h)
 [ -f /etc/default/stream-watchdog ] && . /etc/default/stream-watchdog
 MAX_PER_DAY=${MAX_RESTARTS_PER_DAY:-6}
+MAX_REBOOTS=${MAX_REBOOTS_PER_DAY:-3}
 
 log() { logger -t stream-watchdog "$1"; echo "$1"; }
 
@@ -28,22 +40,53 @@ log() { logger -t stream-watchdog "$1"; echo "$1"; }
 # both restart paths below, so a persistent fault can't spawn an endless stream
 # of throwaway YouTube broadcasts (each restart runs end->create). Survives
 # reboots via /var/lib. Sets $now and $count; fails once the budget is spent.
+# Optional args: another history file and limit (the reboot budget).
 budget_left() {
-    mkdir -p "$(dirname "$HIST")"
+    local hist=${1:-$HIST} max=${2:-$MAX_PER_DAY}
+    mkdir -p "$(dirname "$hist")"
     now=$(date +%s)
     recent=""
-    if [ -f "$HIST" ]; then
+    if [ -f "$hist" ]; then
         while read -r ts; do
             [ -n "$ts" ] && [ $((now - ts)) -lt 86400 ] && recent="$recent$ts
 "
-        done < "$HIST"
+        done < "$hist"
     fi
-    printf '%s' "$recent" > "$HIST"
-    count=$(grep -c . "$HIST")  # grep -c prints 0 itself when empty
-    [ "$count" -lt "$MAX_PER_DAY" ]
+    printf '%s' "$recent" > "$hist"
+    count=$(grep -c . "$hist")  # grep -c prints 0 itself when empty
+    [ "$count" -lt "$max" ]
 }
 
 now_us=$(awk '{printf "%d", $1*1000000}' /proc/uptime)
+
+# Wi-Fi recovery, ahead of everything else: with no connection, nothing below
+# can help. An empty answer (nmcli or NetworkManager not working) skips it.
+wifi=$(nmcli -g GENERAL.STATE device show "$WIFI_IF" 2>/dev/null)
+if [ "${wifi%% *}" = 100 ]; then
+    rm -f "$WIFI_STATE"
+elif [ -n "$wifi" ]; then
+    up_s=$((now_us / 1000000))
+    down_since=$up_s; reset_done=0
+    [ -f "$WIFI_STATE" ] && read -r down_since reset_done < "$WIFI_STATE"
+    down_min=$(( (up_s - down_since) / 60 ))
+    if [ $((up_s - down_since)) -ge "$WIFI_REBOOT_SEC" ]; then
+        if budget_left "$REBOOT_HIST" "$MAX_REBOOTS"; then
+            log "$WIFI_IF has had no connection for $down_min min ($wifi) - rebooting (reboot $((count + 1))/$MAX_REBOOTS in 24h)"
+            echo "$now" >> "$REBOOT_HIST"
+            systemctl reboot
+            exit 0
+        fi
+        log "$WIFI_IF has had no connection for $down_min min but reboot budget exhausted ($count/$MAX_REBOOTS in 24h) - holding off"
+    elif [ $((up_s - down_since)) -ge "$WIFI_RESET_SEC" ] && [ "$reset_done" = 0 ]; then
+        log "$WIFI_IF has had no connection for $down_min min ($wifi) - turning Wi-Fi off and on"
+        echo "$down_since 1" > "$WIFI_STATE"
+        nmcli radio wifi off
+        sleep 5
+        nmcli radio wifi on
+        exit 0
+    fi
+    echo "$down_since $reset_done" > "$WIFI_STATE"
+fi
 
 if systemctl is-failed --quiet "$SERVICE"; then
     # systemd stopped restarting it (StartLimitBurst). A deliberate
