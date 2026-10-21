@@ -1,0 +1,37 @@
+2026-09-16T11:59:20-06:00 rpi-zero2w-stream-cam-d1pr NetworkManager: device (wlan0): conflict detected for IP address 10.60.9.67 with host 00:00:00:00:00:00
+2026-09-16T12:00:44-06:00 rpi-zero2w-stream-cam-d1pr NetworkManager: device (wlan0): conflict detected for IP address 10.60.9.67 with host 00:00:00:00:00:00
+2026-09-16T12:30:44-06:00 rpi-zero2w-stream-cam-d1pr NetworkManager: device (wlan0): conflict detected for IP address 10.60.9.67 with host 00:00:00:00:00:00
+2026-09-16T12:30:45-06:00 rpi-zero2w-stream-cam-d1pr tailscaled: monitor: RTM_DELROUTE: src=10.60.9.67/0, dst=, gw=10.60.0.1, outif=2, table=254
+2026-09-16T12:34:13-06:00 rpi-zero2w-stream-cam-d1pr stream-watchdog: stream stalled for 3 consecutive checks - restarting device.service (restart 1/6 in 24h)
+2026-09-16T12:34:51-06:00 rpi-zero2w-stream-cam-d1pr systemd: device.service: Start request repeated too quickly.
+2026-09-19T22:00:43-06:00 rpi-zero2w-stream-cam-d1pr NetworkManager: device (wlan0): conflict detected for IP address 10.60.9.67 with host 00:00:00:00:00:00
+2026-09-19T22:00:45-06:00 rpi-zero2w-stream-cam-d1pr NetworkManager: device (wlan0): conflict detected for IP address 10.60.9.67 with host 00:00:00:00:00:00
+2026-09-19T22:30:45-06:00 rpi-zero2w-stream-cam-d1pr NetworkManager: device (wlan0): conflict detected for IP address 10.60.9.67 with host 00:00:00:00:00:00
+2026-09-19T22:30:45-06:00 rpi-zero2w-stream-cam-d1pr tailscaled: monitor: RTM_DELROUTE: src=10.60.9.67/0, dst=, gw=10.60.0.1, outif=2, table=254
+2026-09-19T22:34:49-06:00 rpi-zero2w-stream-cam-d1pr stream-watchdog: stream stalled for 3 consecutive checks - restarting device.service (restart 1/6 in 24h)
+2026-09-19T22:35:26-06:00 rpi-zero2w-stream-cam-d1pr systemd: device.service: Start request repeated too quickly.
+2026-09-19T23:23:15-06:00 rpi-zero2w-stream-cam-d1pr NetworkManager: dhcp4 (wlan0): state changed no lease
+2026-09-19T23:24:00-06:00 rpi-zero2w-stream-cam-d1pr NetworkManager: device (wlan0): Activation: failed for connection 'byu-devices'
+2026-09-19T23:24:00-06:00 rpi-zero2w-stream-cam-d1pr NetworkManager: dhcp4 (wlan0): state changed no lease
+2026-09-19T23:24:01-06:00 rpi-zero2w-stream-cam-d1pr tailscaled: monitor: RTM_NEWROUTE: src=10.60.9.67/0, dst=, gw=10.60.0.1, outif=2, table=254
+2026-09-25T23:00:21-06:00 rpi-zero2w-stream-cam-d1pr NetworkManager: device (wlan0): conflict detected for IP address 10.60.9.67 with host 00:00:00:00:00:00
+2026-09-25T23:00:26-06:00 rpi-2w-stream-cam-ex3f NetworkManager: device (wlan0): conflict detected for IP address 10.60.85.253 with host 00:00:00:00:00:00
+2026-09-25T23:00:44-06:00 rpi-zero2w-stream-cam-d1pr NetworkManager: device (wlan0): conflict detected for IP address 10.60.9.67 with host 00:00:00:00:00:00
+2026-09-25T23:25:39-06:00 rpi-2w-stream-cam-ex3f NetworkManager: device (wlan0): conflict detected for IP address 10.60.85.253 with host 00:00:00:00:00:00
+2026-09-25T23:30:44-06:00 rpi-zero2w-stream-cam-d1pr NetworkManager: device (wlan0): conflict detected for IP address 10.60.9.67 with host 00:00:00:00:00:00
+2026-09-25T23:30:45-06:00 rpi-zero2w-stream-cam-d1pr tailscaled: monitor: RTM_DELROUTE: src=10.60.9.67/0, dst=, gw=10.60.0.1, outif=2, table=254
+2026-09-25T23:34:52-06:00 rpi-zero2w-stream-cam-d1pr stream-watchdog: stream stalled for 3 consecutive checks - restarting device.service (restart 1/6 in 24h)
+2026-09-25T23:35:30-06:00 rpi-zero2w-stream-cam-d1pr systemd: device.service: Start request repeated too quickly.
+2026-09-25T23:55:39-06:00 rpi-2w-stream-cam-ex3f NetworkManager: device (wlan0): conflict detected for IP address 10.60.85.253 with host 00:00:00:00:00:00
+2026-09-25T23:55:41-06:00 rpi-2w-stream-cam-ex3f tailscaled: monitor: RTM_DELROUTE: src=10.60.85.253/0, dst=, gw=10.60.0.1, outif=2, table=254
+2026-09-25T23:59:56-06:00 rpi-2w-stream-cam-ex3f stream-watchdog: stream stalled for 3 consecutive checks - restarting device.service (restart 1/6 in 24h)
+2026-09-26T00:00:35-06:00 rpi-2w-stream-cam-ex3f systemd: device.service: Start request repeated too quickly.
+2026-09-26T00:23:14-06:00 rpi-zero2w-stream-cam-d1pr NetworkManager: dhcp4 (wlan0): state changed no lease
+2026-09-26T00:23:59-06:00 rpi-zero2w-stream-cam-d1pr NetworkManager: device (wlan0): Activation: failed for connection 'byu-devices'
+2026-09-26T00:23:59-06:00 rpi-zero2w-stream-cam-d1pr NetworkManager: dhcp4 (wlan0): state changed no lease
+2026-09-26T00:24:00-06:00 rpi-zero2w-stream-cam-d1pr tailscaled: monitor: RTM_NEWROUTE: src=10.60.9.67/0, dst=, gw=10.60.0.1, outif=2, table=254
+2026-09-26T00:48:09-06:00 rpi-2w-stream-cam-ex3f NetworkManager: dhcp4 (wlan0): state changed no lease
+2026-09-26T00:48:54-06:00 rpi-2w-stream-cam-ex3f NetworkManager: device (wlan0): Activation: failed for connection 'netplan-wlan0-byu-devices'
+2026-09-26T00:48:54-06:00 rpi-2w-stream-cam-ex3f NetworkManager: dhcp4 (wlan0): state changed no lease
+2026-09-26T00:49:06-06:00 rpi-2w-stream-cam-ex3f tailscaled: monitor: RTM_NEWROUTE: src=10.60.85.253/0, dst=, gw=10.60.0.1, outif=2, table=254
+2026-09-26T00:49:40-06:00 rpi-2w-stream-cam-ex3f stream-watchdog: device.service has failed and a.rtmp.youtube.com/1935 is reachable - starting it (restart 2/6 in 24h)
