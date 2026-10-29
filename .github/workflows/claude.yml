@@ -37,8 +37,11 @@ jobs:
     # session starts. See "Why the write grant cannot make the job trigger
     # itself" in
     # https://github.com/ME-EN-372/me-en-372-machine-design-private/blob/main/docs/claude-yml-model-fallback.md.
+    # The !contains(...'@claude-youtube') clause skips comments for
+    # claude-youtube.yml, since that phrase also contains @claude.
     if: |
       github.event.sender.type != 'Bot' &&
+      !contains(github.event.comment.body || github.event.review.body || format('{0} {1}', github.event.issue.title, github.event.issue.body), '@claude-youtube') &&
       ((github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
        (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
        (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
@@ -70,11 +73,13 @@ jobs:
       # Read-only access to the sgbaird/agent-staging drop box, for files staged
       # from other repos (see CLAUDE.md, "Receiving files from other repos").
       GH_READ_PAT_STAGING: ${{ secrets.GH_READ_PAT_STAGING }}
+      # BYU VCL Hardware Streams, upload + read + analytics only (Google won't
+      # let it delete or edit). Full control is @claude-youtube only; see CLAUDE.md.
+      YOUTUBE_UPLOAD_TOKEN_PICKLE_B64: ${{ secrets.YOUTUBE_UPLOAD_TOKEN_PICKLE_B64 }}
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       LAMBDA_FUNCTION_URL: ${{ secrets.LAMBDA_FUNCTION_URL }}
-      GOOGLE_OAUTH_TOKEN_PICKLE_B64: ${{ secrets.GOOGLE_OAUTH_TOKEN_PICKLE_B64 }}
       RPI_STREAM_CAM_HOSTNAME: ${{ secrets.RPI_STREAM_CAM_HOSTNAME }}
       RPI_STREAM_CAM_PASSWORD: ${{ secrets.RPI_STREAM_CAM_PASSWORD }}
       RPI_STREAM_CAM_USERNAME: ${{ secrets.RPI_STREAM_CAM_USERNAME }}
