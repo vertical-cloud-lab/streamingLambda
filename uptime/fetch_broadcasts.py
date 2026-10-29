@@ -1,6 +1,6 @@
 """Save every broadcast on the channel (broadcasts.json) and its video details (videos.json).
 
-Needs a Google OAuth token pickle with the youtube scope, e.g. from GOOGLE_OAUTH_TOKEN_PICKLE_B64.
+Needs a Google OAuth token pickle with youtube.readonly, e.g. YOUTUBE_UPLOAD_TOKEN_PICKLE_B64 (upload + read).
 """
 import base64
 import json
@@ -12,7 +12,7 @@ from googleapiclient.discovery import build
 
 
 def main():
-    creds = pickle.loads(base64.b64decode(os.environ["GOOGLE_OAUTH_TOKEN_PICKLE_B64"]))
+    creds = pickle.loads(base64.b64decode(os.environ["YOUTUBE_UPLOAD_TOKEN_PICKLE_B64"]))
     if not creds.valid:
         creds.refresh(Request())
     yt = build("youtube", "v3", credentials=creds)
